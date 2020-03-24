@@ -2,7 +2,9 @@
 title: "covi19 ggplot2"
 author: "Norberto Asensio"
 date: "24/03/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Get COVI19 world data
 
-Script detail from <https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide->.
+Script detail to download data in <https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide->.
 
 ```{r}
 #these libraries are necessary
@@ -25,8 +27,7 @@ GET(url, authenticate(":", ":", type="ntlm"), write_disk(tf <- tempfile(fileext 
 data <- read_excel(tf)
 #read the Dataset sheet into “R”
 data <- read_excel(tf)
-head(data)
-table(data$`Countries and territories`)
+str(data)
 ```
 
 ## Subsample a database with countries of interest

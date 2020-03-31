@@ -380,11 +380,11 @@ url &lt;- paste(&quot;https://www.ecdc.europa.eu/sites/default/files/documents/C
 #download the dataset from the website to a local temporary file
 GET(url, authenticate(&quot;:&quot;, &quot;:&quot;, type=&quot;ntlm&quot;), write_disk(tf &lt;- tempfile(fileext = &quot;.xlsx&quot;)))</code></pre>
 <pre><code>## Response [https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-2020-03-24.xlsx]
-##   Date: 2020-03-24 13:14
+##   Date: 2020-03-24 13:28
 ##   Status: 200
 ##   Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 ##   Size: 254 kB
-## &lt;ON DISK&gt;  /var/folders/08/4_zvl9fd5259_lw8c12d7vzm0000gn/T//RtmphYDmyT/file177516d0acc2e.xlsx</code></pre>
+## &lt;ON DISK&gt;  /var/folders/08/4_zvl9fd5259_lw8c12d7vzm0000gn/T//RtmpRQjabB/file178a455b2842d.xlsx</code></pre>
 <pre class="r"><code>#read the Dataset sheet into “R”
 data &lt;- read_excel(tf)
 #read the Dataset sheet into “R”

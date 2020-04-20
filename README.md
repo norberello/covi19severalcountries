@@ -10,5 +10,4 @@ which says:
 
 <img src="https://github.com/norberello/covi19severalcountries/blob/master/Rplot.png">
 
-
-
+<img src="https://github.com/norberello/covi19severalcountries/blob/master/newplot.png">

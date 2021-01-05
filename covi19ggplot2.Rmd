@@ -32,22 +32,295 @@ str(data)
 
 ## Subsample a database with countries of interest
 ```{r}
-severaldata <- data[which(data$`Countries and territories`=='Spain' | 
-                            data$`Countries and territories`=='Italy'| 
-                            data$`Countries and territories`=='Mexico'| 
-                            data$`Countries and territories`=='Thailand'| 
-                            data$`Countries and territories`=='United_Kingdom'), ]
-table(severaldata$`Countries and territories`)#available days with data
+severaldata <- data[which(data$countriesAndTerritories=='Spain' | 
+                            data$countriesAndTerritories=='Italy'| 
+data$countriesAndTerritories=='Brazil'|                            data$countriesAndTerritories=='Mexico'| 
+                            data$countriesAndTerritories=='Thailand'| 
+                            data$countriesAndTerritories=='United_Kingdom'| 
+                            data$countriesAndTerritories=='United_States_of_America'), ]
+table(severaldata$countriesAndTerritories)#available days with data
 ```
 
 ## Scatterplots with daily new cases
 
 ```{r}
 library(ggplot2)
-ggplot(severaldata, aes(x=DateRep, y=Cases, color=`Countries and territories`)) +
+ggplot(severaldata, aes(x=dateRep, y=cases, color=countriesAndTerritories)) +
   geom_point()+geom_line()+  
   xlab("Date") + ylab("COVI19 new cases") +
   theme(plot.title = element_text(lineheight=.8, face="bold", size = 20)) +theme(text = element_text(size=12))
 ```
 
+```{r}
+ggplot(severaldata, aes(x=dateRep, y=deaths, color=countriesAndTerritories)) +
+  geom_point()+geom_line()+  
+  xlab("Date") + ylab("COVI19 daily deaths") +
+  theme(plot.title = element_text(lineheight=.8, face="bold", size = 20)) +theme(text = element_text(size=12))
+```
+
+
+
+
+## Scatterplots with facets
+
+```{r}
+p <- ggplot(severaldata,aes(dateRep,cases)) + geom_point()+geom_line(col="red")
+
+# Use vars() to supply variables from the dataset:
+p + facet_grid(rows = vars(countriesAndTerritories))
+```
+
+```{r}
+# Basic barplot sp
+spdata <- data[which(data$countriesAndTerritories=='Spain'), ]
+bp<-ggplot(data=spdata, aes(dateRep,cases)) +
+  geom_bar(stat="identity", fill="steelblue")
+bp
+```
+
+```{r}
+bp+geom_text(aes(label=cases), vjust=-0.3, size=2.5)+
+  theme_minimal()
+```
+
+```{r}
+bp + scale_fill_brewer(palette="Reds")
+```
+
+```{r}
+ggplot(data=spdata, aes(dateRep,cases,col=cases)) +
+  geom_bar(stat="identity", fill="transparent") 
+```
+
+```{r}
+ggplot(data=spdata, aes(dateRep,cases)) + 
+  geom_col(aes(fill = cases)) +
+  scale_colour_gradientn(colours = terrain.colors(50))
+```
+
+```{r}
+ggplot(spdata,aes(dateRep,cases)) + geom_point()+geom_line(col="red")
+```
+
+```{r}
+# Basic barplot sp
+itdata <- data[which(data$countriesAndTerritories=='Italy'), ]
+bp<-ggplot(data=itdata, aes(dateRep,cases)) +
+  geom_bar(stat="identity", fill="steelblue")
+bp
+```
+
+```{r}
+ggplot(itdata,aes(dateRep,cases)) + geom_point()+geom_line(col="purple")
+```
+
+```{r}
+library(ggplot2)
+ggplot(itdata, aes(dateRep,deaths)) +
+	geom_line(col=2) +
+	geom_smooth(method = "gam", se = T, span = 0.6) +
+	theme_classic()+geom_point()+
+  xlab("Date") + ylab("COVI19 daily deaths (Italy)")
+#lets extend the prediction to May
+```
+
+
+
+
+```{r}
+g<-ggplot(spdata,aes(dateRep,cases)) + geom_area(col=2,fill = "lightgreen")+  
+  xlab("Date") + ylab("COVI19 new cases in Spain")+geom_point()
+g
+```
+```{r}
+library(plotly)
+ggplotly(g)
+```
+
+```{r}
+library(ggplot2)
+# Coerce to `Date` class
+spdata$date <- as.Date(spdata$dateRep, format = "%Y-%m-%d")
+# Check it worked
+class(spdata$date)
+# lm, glm, gam, loess, rlm
+ggplot(spdata, aes(x = date, y = cases)) +
+	geom_line(col=2) +
+	geom_smooth(method = "gam", se = T, span = 0.6) +
+	theme_classic()+geom_point()+  
+  xlab("Date") + ylab("COVI19 daily deaths (Spain)")
+#lets extend the prediction to May
+```
+
+```{r}
+library(forecast)
+# Converting global_temp into a time series (ts) object.
+covi19_ts <- ts(spdata$cases)
+plot(covi19_ts)
+
+# Forecasting covi19 50 days into the future 
+# using an exponential smoothing state space model (ets).
+covi_forecast <- forecast( ets(covi19_ts), h = 50)
+
+# Plotting the forecast
+# .... YOUR CODE FOR TASK 5 ...
+plot(covi_forecast)
+autoplot(covi_forecast)
+
+```
+
+```{r}
+#https://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/src/timeseries.html
+library(forecast)
+date<-spdata$date
+cases<-spdata$cases
+datita<-data.frame(date,cases)
+datita[order(datita$date),]
+head(datita)
+tail(datita)
+str(datita)
+plot(datita)
+```
+
+```{r}
+library(forecast)
+# Forecasting covi19 30 days into the future 
+# using an exponential smoothing state space model (ets).
+datita2 <- datita[nrow(datita):1,]
+covi19_ts2 <- ts(datita2$cases)
+covi_forecast2 <- forecast(ets(covi19_ts2), h = 30)
+plot(covi_forecast2)
+
+
+# additional plots
+monthplot(covi19_ts2)
+fit <- HoltWinters(covi19_ts2, beta=FALSE, gamma=FALSE)
+plot(fit)
+plot(forecast(fit, 100))
+# Automated forecasting using an ARIMA model
+fit2 <- auto.arima(covi19_ts2)
+plot(forecast(fit2, 15))
+
+```
+
+Let's try modelling it with GLM
+
+```{r}
+#
+count<-(nrow(datita))
+daycount<-seq(1,count,1)
+daycount<-count-daycount
+datita3<-data.frame(daycount,cases)#hay q darle la vuelta!!!
+model3<-glm(cases~poly(daycount,2),
+            data=datita3,family="poisson")
+confint(model3, level=0.95)
+pred.frame2<-seq(0,count+50,1)
+prediction2 <- predict(model3, list(daycount = pred.frame2),type="response",se.fit = T)
+plot(datita3$daycount,datita3$cases,ylab="new cases",
+     xlab="days",type="l",main="predicciones para el pinche COVI19 in Spain (24-Apr-2020)",xlim=c(0,150),lwd=2)
+lines(pred.frame2,prediction2$fit,col="blue",lty=3,lwd=2)
+#lines(pred.frame2,prediction2$fit+50.96*prediction2$se.fit,col="blue",lwd=0.5)
+#lines(pred.frame2,prediction2$fit-50.96*prediction2$se.fit,col="blue",lwd=0.5)
+points(datita3$daycount,datita3$cases)
+abline(v=56,col="red",lty=2)
+text(24,4500,"first case: 17/03/2020",col="red")
+abline(v=140,col="green",lty=2)
+text(125,1500,"predicted 0 cases: 28/05/2020",col="green")
+# Add a legend
+legend(1, 8000, legend=c("daily cases", "fitted cases"),
+       col=c("black", "blue"), lty=c(1,2), cex=1)
+```
+
+```{r}
+#data$countriesAndTerritories=='Mexico'
+mxdata <- data[which(data$countriesAndTerritories=='Mexico'), ]
+library(ggplot2)
+ggplot(mxdata, aes(dateRep,deaths)) +
+	geom_line(col="green") +
+	geom_smooth(method = "gam", se = T, span = 0.6) +
+	theme_classic()+geom_point()+
+  xlab("Date") + ylab("COVI19 daily deaths (Mexico)")
+#lets extend the prediction to May
+```
+
+```{r}
+#data$countriesAndTerritories=='Mexico'
+ukdata <- data[which(data$countriesAndTerritories=='United_Kingdom'), ]
+library(ggplot2)
+ggplot(ukdata, aes(dateRep,deaths)) +
+	geom_line(col=2) +
+	geom_smooth(method = "gam", se = T, span = 0.6) +
+	theme_classic()+geom_point()+
+  xlab("Date") + ylab("COVI19 daily deaths (UK)")
+#lets extend the prediction to May
+```
+
+
+
+```{r}
+library(ggplot2)
+# Coerce to `Date` class
+spdata$date <- as.Date(spdata$dateRep, format = "%Y-%m-%d")
+# Check it worked
+class(spdata$date)
+# lm, glm, gam, loess, rlm
+ggplot(spdata, aes(x = date, y = deaths)) +
+	geom_line(col=2) +
+	geom_smooth(method = "gam", se = T, span = 0.7,fullrange=T) +
+	geom_point()+
+  xlab("Date") + ylab("COVI19 daily deaths (Spain)")+theme(plot.title = element_text(size = 16, face = "bold"),
+    legend.title=element_text(size=12), 
+    legend.text=element_text(size=12))
+#lets extend the prediction to May
+```
+
+```{r}
+date<-spdata$date
+cases<-spdata$deaths
+datita<-data.frame(date,cases)
+datita[order(datita$date),]
+head(datita)
+tail(datita)
+str(datita)
+plot(datita)
+```
+
+```{r}
+count<-(nrow(datita))
+daycount<-seq(1,count,1)
+daycount<-count-daycount
+datita4<-data.frame(daycount,cases)#hay q darle la vuelta!!!
+model4<-glm(cases~poly(daycount,2),
+            data=datita4,family="poisson")
+confint(model3, level=0.95)
+pred.frame3<-seq(0,count+50,1)
+prediction3 <- predict(model4, list(daycount = pred.frame3),type="response",se.fit = T)
+plot(datita4$daycount,datita4$cases,ylab="daily death cases",
+     xlab="days",type="l",main="predicciones para el pinche COVI19 in Spain (21-Apr-2020)",xlim=c(0,150),lwd=2)
+lines(pred.frame3,prediction3$fit,col="green",lty=3,lwd=2)
+#lines(pred.frame2,prediction2$fit+50.96*prediction2$se.fit,col="blue",lwd=0.5)
+#lines(pred.frame2,prediction2$fit-50.96*prediction2$se.fit,col="blue",lwd=0.5)
+points(datita4$daycount,datita4$cases)
+abline(v=56,col="red",lty=2)
+text(33,600,"first case: 17/03/2020",col="red")
+abline(v=143,col="green",lty=2)
+text(120,100,"predicted 0 deaths: 26/May",col="green")
+# Add a legend
+legend(1, 700, legend=c("daily deaths", "predicted deaths"),
+       col=c("black", "green"), lty=c(1,2), cex=1)
+```
+
+
+
+```{r}
+#data$countriesAndTerritories=='Mexico'
+brdata <- data[which(data$countriesAndTerritories=='Brazil'), ]
+library(ggplot2)
+ggplot(brdata, aes(dateRep,deaths)) +
+	geom_line(col=2) +
+	geom_smooth(method = "gam", se = T, span = 0.6) +
+	theme_classic()+geom_point()+
+  xlab("Date") + ylab("COVI19 daily deaths (Brazil)")
+#lets extend the prediction to May
+```
 
